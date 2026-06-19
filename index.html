@@ -1,11 +1,114 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulador Psicotécnico con IA</title>
+  <link rel="stylesheet" href="/ASSETS/css/styles.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css">
 </head>
 <body>
-    
+  <div id="app">
+    <!-- Login -->
+    <section id="login-screen" class="screen active">
+      <div class="login-card">
+        <div class="login-icon"><i class="ti ti-lock" style="font-size:48px;"></i></div>
+        <h1>Simulador Psicotécnico</h1>
+        <p class="login-sub">Acceso restringido</p>
+        <form id="login-form">
+          <input type="password" id="password-input" placeholder="Contraseña" required autocomplete="off">
+          <button type="submit" class="btn-primary">Ingresar</button>
+          <p id="login-error" class="error-msg"></p>
+        </form>
+      </div>
+    </section>
+
+    <!-- Dashboard -->
+    <section id="dashboard-screen" class="screen">
+      <header class="app-header">
+        <h1><i class="ti ti-brain"></i> Simulador Psicotécnico</h1>
+        <button id="logout-btn" class="btn-ghost"><i class="ti ti-logout"></i> Salir</button>
+      </header>
+      <div class="dashboard-content">
+        <div class="welcome-card">
+          <h2>¿Listo para practicar?</h2>
+          <p>Genera un nuevo test con preguntas únicas creadas por IA. Cada sesión es diferente.</p>
+          <button id="start-btn" class="btn-primary btn-large">
+            <i class="ti ti-sparkles"></i> Nueva ronda
+          </button>
+        </div>
+        <div class="stats-grid" id="stats-container">
+          <div class="stat-card">
+            <div class="stat-value" id="stat-total">0</div>
+            <div class="stat-label">Tests realizados</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stat-avg">0%</div>
+            <div class="stat-label">Promedio general</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Loading -->
+    <section id="loading-screen" class="screen">
+      <div class="loading-content">
+        <div class="spinner"></div>
+        <h2>Generando preguntas con IA...</h2>
+        <p>Esto puede tomar 10-20 segundos</p>
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+      </div>
+    </section>
+
+    <!-- Quiz -->
+    <section id="quiz-screen" class="screen">
+      <div class="quiz-header">
+        <div class="quiz-info">
+          <span class="section-badge" id="current-section">Matemática básica</span>
+          <span class="diff-badge" id="current-diff">Fácil</span>
+        </div>
+        <div class="timer" id="timer">60</div>
+      </div>
+      <div class="progress-track">
+        <div class="track-fill" id="track-fill"></div>
+        <span id="question-counter">1 / 50</span>
+      </div>
+      <div class="question-card">
+        <h3 id="question-text">Cargando...</h3>
+        <div class="options-grid" id="options-container"></div>
+      </div>
+      <div class="quiz-actions">
+        <button id="next-btn" class="btn-primary" disabled>Siguiente <i class="ti ti-arrow-right"></i></button>
+      </div>
+    </section>
+
+    <!-- Results -->
+    <section id="results-screen" class="screen">
+      <div class="results-card">
+        <div class="result-icon"><i class="ti ti-trophy" style="font-size:48px;"></i></div>
+        <h2>Resultados</h2>
+        <div class="score-big" id="final-score">0/50</div>
+        <div class="score-percent" id="final-percent">0%</div>
+        <div class="breakdown-grid" id="breakdown-container"></div>
+        <div class="results-actions">
+          <button id="retry-btn" class="btn-primary"><i class="ti ti-refresh"></i> Nueva ronda</button>
+          <button id="home-btn" class="btn-ghost">Volver al inicio</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Error -->
+    <section id="error-screen" class="screen">
+      <div class="error-card">
+        <div class="error-icon"><i class="ti ti-alert-triangle" style="font-size:48px; color:#DC2626;"></i></div>
+        <h2>Error de conexión</h2>
+        <p id="error-msg">No se pudieron generar las preguntas. Intenta nuevamente más tarde.</p>
+        <button id="error-retry" class="btn-primary">Reintentar</button>
+        <button id="error-home" class="btn-ghost">Volver al inicio</button>
+      </div>
+    </section>
+  </div>
+
+  <script src="app.js"></script>
 </body>
 </html>
