@@ -122,6 +122,9 @@ function updateStats() {
 // ============================================
 // GENERAR PREGUNTAS
 // ============================================
+// ============================================
+// GENERAR PREGUNTAS (con respaldo)
+// ============================================
 async function generateQuestions() {
   showScreen('loading');
   els.progressFill.style.width = '10%';
@@ -150,9 +153,26 @@ async function generateQuestions() {
 
     setTimeout(() => startQuiz(), 300);
   } catch (e) {
-    console.error(e);
-    els.errorMsg.textContent = e.message || 'No se pudieron generar las preguntas. Verifica tu conexión o intenta más tarde.';
-    showScreen('error');
+    console.error('Error con Gemini, usando respaldo:', e);
+    
+    if (typeof obtenerPreguntasRespaldo === 'function') {
+      const preguntasRespaldo = obtenerPreguntasRespaldo();
+      
+      if (preguntasRespaldo.length > 0) {
+        state.questions = preguntasRespaldo;
+        state.currentIndex = 0;
+        state.answers = [];
+        
+        els.progressFill.style.width = '100%';
+        setTimeout(() => startQuiz(), 500);
+      } else {
+        els.errorMsg.textContent = 'No se pudieron generar las preguntas y el banco de respaldo está vacío.';
+        showScreen('error');
+      }
+    } else {
+      els.errorMsg.textContent = 'Error de conexión. Intenta más tarde.';
+      showScreen('error');
+    }
   }
 }
 
