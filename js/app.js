@@ -1,7 +1,4 @@
-// ============================================
-// CONFIGURACIÓN
-// ============================================
-const VERCEL_URL = 'https://simulador-test-sage.vercel.app'; 
+const VERCEL_URL = 'https://simulador-test-sage.vercel.app';
 const AUTH_ENDPOINT = `${VERCEL_URL}/api/auth`;
 const QUESTIONS_ENDPOINT = `${VERCEL_URL}/api/preguntas`;
 
@@ -14,9 +11,9 @@ const SECTIONS = [
 ];
 
 const DIFFICULTIES = [
-  { key: 'easy', label: 'Fácil', count: 3, color: 'easy' },
-  { key: 'medium', label: 'Intermedio', count: 4, color: 'medium' },
-  { key: 'hard', label: 'Difícil', count: 3, color: 'hard' }
+  { key: 'easy', label: 'Fácil', count: 2, color: 'easy' },
+  { key: 'medium', label: 'Intermedio', count: 2, color: 'medium' },
+  { key: 'hard', label: 'Difícil', count: 1, color: 'hard' }
 ];
 
 const TIME_PER_QUESTION = 60;
@@ -138,7 +135,10 @@ async function generateQuestions() {
       }
     });
 
-    if (!res.ok) throw new Error('Error en la respuesta');
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.error || `HTTP ${res.status}`);
+    }
 
     const data = await res.json();
     if (!data.questions || !Array.isArray(data.questions)) throw new Error('Formato inválido');
@@ -151,7 +151,7 @@ async function generateQuestions() {
     setTimeout(() => startQuiz(), 300);
   } catch (e) {
     console.error(e);
-    els.errorMsg.textContent = 'No se pudieron generar las preguntas. Verifica tu conexión o intenta más tarde.';
+    els.errorMsg.textContent = e.message || 'No se pudieron generar las preguntas. Verifica tu conexión o intenta más tarde.';
     showScreen('error');
   }
 }
@@ -170,8 +170,8 @@ function getCurrentQuestion() {
 
 function renderQuestion() {
   const q = getCurrentQuestion();
-  const section = SECTIONS.find(s => s.id === q.section);
-  const diff = DIFFICULTIES.find(d => d.key === q.difficulty);
+  const section = SECTIONS.find(s => s.id === q.section) || SECTIONS[0];
+  const diff = DIFFICULTIES.find(d => d.key === q.difficulty) || DIFFICULTIES[0];
 
   els.currentSection.textContent = `${section.emoji} ${section.name}`;
   els.currentDiff.className = `diff-badge ${diff.color}`;
