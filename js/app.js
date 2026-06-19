@@ -1,7 +1,7 @@
 // ============================================
 // CONFIGURACIÓN
 // ============================================
-const VERCEL_URL = 'https://TU-PROYECTO.vercel.app'; // ← CAMBIA ESTO por tu URL de Vercel
+const VERCEL_URL = 'https://simulador-test-sage.vercel.app'; 
 const AUTH_ENDPOINT = `${VERCEL_URL}/api/auth`;
 const QUESTIONS_ENDPOINT = `${VERCEL_URL}/api/preguntas`;
 
