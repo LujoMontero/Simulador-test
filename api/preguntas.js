@@ -1,4 +1,4 @@
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -37,49 +37,63 @@ FORMATO JSON EXACTO - array de 50 objetos:
     "question": "texto de la pregunta",
     "options": ["opción A", "opción B", "opción C", "opción D"],
     "correct": 0,
-    "explanation": "breve explicación de la respuesta correcta",
+    "explanation": "breve explicación",
     "section": "matematica",
     "difficulty": "easy"
   }
 ]
 
-REGLAS ESTRICTAS:
+REGLAS:
 - Cada pregunta: exactamente 4 opciones
-- Solo UNA opción correcta (correct: número 0-3, índice del array options)
-- Preguntas nuevas, variadas y desafiantes
+- Solo UNA opción correcta (correct: 0-3)
 - Responde SOLO con el JSON array válido
-- Sin markdown, sin texto adicional antes o después
-- Exactamente 50 objetos en el array`;
+- Sin markdown, sin texto adicional
+- Exactamente 50 objetos`;
 
   try {
-    const geminiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.9, maxOutputTokens: 8192 }
-        })
-      }
-    );
+    const https = require('https');
 
-    if (!geminiRes.ok) {
-      const err = await geminiRes.text();
-      throw new Error(`Gemini HTTP ${geminiRes.status}: ${err}`);
+    const postData = JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { temperature: 0.9, maxOutputTokens: 8192 }
+    });
+
+    const geminiUrl = `generativelanguage.googleapis.com`;
+    const geminiPath = `/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+    const options = {
+      hostname: geminiUrl,
+      path: geminiPath,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(postData)
+      }
+    };
+
+    const geminiRes = await new Promise((resolve, reject) => {
+      const req = https.request(options, (res) => {
+        let data = '';
+        res.on('data', (chunk) => data += chunk);
+        res.on('end', () => resolve({ status: res.statusCode, data }));
+      });
+      req.on('error', reject);
+      req.write(postData);
+      req.end();
+    });
+
+    if (geminiRes.status !== 200) {
+      throw new Error(`Gemini HTTP ${geminiRes.status}: ${geminiRes.data}`);
     }
 
-    const geminiData = await geminiRes.json();
+    const geminiData = JSON.parse(geminiRes.data);
     
     if (geminiData.error) {
       throw new Error(`Gemini API error: ${geminiData.error.message}`);
     }
 
     const text = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
-
-    if (!text) {
-      throw new Error('Respuesta vacía de Gemini');
-    }
+    if (!text) throw new Error('Respuesta vacía');
 
     let jsonStr = text;
     if (text.includes('```')) {
@@ -87,38 +101,27 @@ REGLAS ESTRICTAS:
     }
 
     const questions = JSON.parse(jsonStr);
-    
-    if (!Array.isArray(questions)) {
-      throw new Error('La respuesta no es un array');
-    }
+    if (!Array.isArray(questions)) throw new Error('No es array');
 
-    // Validar y limpiar
     const validQuestions = [];
-    for (let i = 0; i < questions.length; i++) {
-      const q = questions[i];
+    for (const q of questions) {
       if (!q.question || !Array.isArray(q.options) || q.options.length !== 4 ||
           typeof q.correct !== 'number' || q.correct < 0 || q.correct > 3 ||
           !q.section || !q.difficulty) {
-        console.warn(`Pregunta ${i} inválida, saltando...`);
         continue;
       }
       validQuestions.push(q);
     }
 
-    if (validQuestions.length === 0) {
-      throw new Error('Ninguna pregunta válida recibida');
-    }
+    if (validQuestions.length === 0) throw new Error('Ninguna pregunta válida');
 
-    return res.status(200).json({ 
-      questions: validQuestions, 
-      total: validQuestions.length 
-    });
+    return res.status(200).json({ questions: validQuestions, total: validQuestions.length });
 
   } catch (error) {
-    console.error('Error generando preguntas:', error);
+    console.error('Error:', error);
     return res.status(500).json({
       error: 'Error al generar preguntas',
       details: error.message
     });
   }
-}
+};
