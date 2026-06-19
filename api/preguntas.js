@@ -16,9 +16,9 @@ module.exports = async (req, res) => {
     return res.status(500).json({ error: 'GEMINI_API_KEY not set' });
   }
 
-  const prompt = `Genera exactamente 50 preguntas de test psicotécnico en español.
+  const prompt = `Genera exactamente 25 preguntas de test psicotécnico en español.
 
-ESTRUCTURA REQUERIDA - 5 secciones con 10 preguntas cada una:
+ESTRUCTURA REQUERIDA - 5 secciones con 5 preguntas cada una:
 
 Sección 1 "matematica": Matemática básica (operaciones, porcentajes, fracciones, regla de tres, proporciones)
 Sección 2 "series": Series y secuencias (numéricas: aritméticas, geométricas, primos, fibonacci; letras: patrones de abecedario)
@@ -27,11 +27,11 @@ Sección 4 "conceptos": Conceptos y significados (determinar si dos palabras/fra
 Sección 5 "sinonimos": Sinónimos y antónimos (seleccionar sinónimo o antónimo correcto entre 4 opciones)
 
 DIFICULTAD POR SECCIÓN:
-- 3 fáciles (difficulty: "easy")
-- 4 intermedias (difficulty: "medium")
-- 3 difíciles (difficulty: "hard")
+- 2 fáciles (difficulty: "easy")
+- 2 intermedias (difficulty: "medium")
+- 1 difícil (difficulty: "hard")
 
-FORMATO JSON EXACTO - array de 50 objetos:
+FORMATO JSON EXACTO - array de 25 objetos:
 [
   {
     "question": "texto de la pregunta",
@@ -48,22 +48,19 @@ REGLAS:
 - Solo UNA opción correcta (correct: 0-3)
 - Responde SOLO con el JSON array válido
 - Sin markdown, sin texto adicional
-- Exactamente 50 objetos`;
+- Exactamente 25 objetos`;
 
   try {
     const https = require('https');
 
     const postData = JSON.stringify({
       contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.9, maxOutputTokens: 8192 }
+      generationConfig: { temperature: 0.9, maxOutputTokens: 4096 }
     });
 
-    const geminiUrl = `generativelanguage.googleapis.com`;
-    const geminiPath = `/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
-
     const options = {
-      hostname: geminiUrl,
-      path: geminiPath,
+      hostname: 'generativelanguage.googleapis.com',
+      path: `/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -115,7 +112,10 @@ REGLAS:
 
     if (validQuestions.length === 0) throw new Error('Ninguna pregunta válida');
 
-    return res.status(200).json({ questions: validQuestions, total: validQuestions.length });
+    return res.status(200).json({ 
+      questions: validQuestions, 
+      total: validQuestions.length 
+    });
 
   } catch (error) {
     console.error('Error:', error);
