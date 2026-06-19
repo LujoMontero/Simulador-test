@@ -1,7 +1,7 @@
 // ============================================
 // CONFIGURACIÓN
 // ============================================
-const VERCEL_URL = 'https://TU-PROYECTO.vercel.app'; // ← CAMBIA ESTO
+const VERCEL_URL = 'https://TU-PROYECTO.vercel.app'; // ← CAMBIA ESTO por tu URL de Vercel
 const AUTH_ENDPOINT = `${VERCEL_URL}/api/auth`;
 const QUESTIONS_ENDPOINT = `${VERCEL_URL}/api/preguntas`;
 
@@ -203,7 +203,6 @@ function selectOption(index, btnElement) {
   clearInterval(state.timer);
   const q = getCurrentQuestion();
 
-  // Marcar selección
   document.querySelectorAll('.option-btn').forEach((btn, i) => {
     btn.disabled = true;
     if (i === q.correct) btn.classList.add('correct');
@@ -283,7 +282,6 @@ function showResults() {
   const total = state.questions.length;
   const percent = Math.round((correct / total) * 100);
 
-  // Guardar stats
   state.stats.total++;
   state.stats.sum += percent;
   localStorage.setItem('sim_stats', JSON.stringify(state.stats));
@@ -292,7 +290,6 @@ function showResults() {
   els.finalPercent.textContent = `${percent}%`;
   els.finalPercent.style.color = percent >= 70 ? 'var(--success)' : percent >= 40 ? 'var(--warning)' : 'var(--danger)';
 
-  // Breakdown por sección
   els.breakdownContainer.innerHTML = '';
   SECTIONS.forEach(sec => {
     const secAnswers = state.answers.filter(a => a.section === sec.id);
